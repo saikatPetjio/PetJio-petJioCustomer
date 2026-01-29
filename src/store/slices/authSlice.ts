@@ -16,6 +16,7 @@ import authService, {
 interface AuthState {
   user: User | null;
   categories: any[]; // To store the pet categories
+  breeds: any[]; // To store the pet breeds
   pets: petResponse[];
   sizes: any[]; // To store the pet sizes
   genders: any[]; // To store the pet genders
@@ -26,6 +27,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   categories: [],
+  breeds: [],
   pets: [],
   sizes: [],
   genders: [],
@@ -113,6 +115,20 @@ export const fetchPetGenders = createAsyncThunk<PetGenderResponse, void>(
   },
 );
 
+export const fetchPetBreed = createAsyncThunk<PetCategoryResponse, void>(
+  'pets/fetchBreeds',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Calling the simplified service
+      return await authService.getPetBreed();
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to fetch breeds',
+      );
+    }
+  },
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -129,9 +145,9 @@ const authSlice = createSlice({
       })
       .addCase(
         registerUser.fulfilled,
-        (state, action: PayloadAction<RegisterResponse>) => {
+        (state) => {
           state.loading = false;
-          state.user = action.payload.body;
+          // state.user = action.payload.body;
         },
       )
       .addCase(registerUser.rejected, (state, action) => {
@@ -149,7 +165,7 @@ const authSlice = createSlice({
         loginUser.fulfilled,
         (state, action: PayloadAction<LoginResponse>) => {
           state.loading = false;
-          state.user = action.payload.body.user; // Updates global state with logged-in user
+          state.user = action.payload.body?.user || null; // Updates global state with logged-in user
           state.error = null;
         },
       )
@@ -224,6 +240,22 @@ const authSlice = createSlice({
         state.genders = action.payload.body;
       })
       .addCase(fetchPetGenders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+    //fetch pet breeds cases
+    builder
+      .addCase(fetchPetBreed.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPetBreed.fulfilled, (state, action) => {
+        state.loading = false;
+        // Map the data from your API response body to the state
+        // You can store breeds in the state if needed
+        state.breeds = action.payload.body;
+      })
+      .addCase(fetchPetBreed.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

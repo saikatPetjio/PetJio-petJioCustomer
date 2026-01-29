@@ -3,11 +3,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   View,
   Image,
   Alert,
+  Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -18,6 +17,7 @@ import SocialButton from '../../components/SocialButton';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { LoginRequest } from '../../services/authService';
 import { loginUser } from '../../store/slices/authSlice';
+import CustomHead from '../../components/CustomHead';
 
 type RootStackParamList = {
   Login: undefined;
@@ -25,9 +25,11 @@ type RootStackParamList = {
   ChoosePet: undefined;
 };
 
+const height = Dimensions.get('window').height;
+
 const Login: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   //   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -37,10 +39,10 @@ const Login: React.FC = () => {
 
   const handleLogin = async () => {
     // Combine your local UI states into the format the API expects
-    if(email === ''){
+    if (email === '') {
       Alert.alert('Please enter email');
       return;
-    } else if(password === ''){
+    } else if (password === '') {
       Alert.alert('Please enter password');
       return;
     }
@@ -66,16 +68,10 @@ const Login: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      {/* Logo */}
+    <CustomHead>
       <View style={styles.logoContainer}>
         <Image source={Images.logo} style={styles.logoImg} />
       </View>
-
-      {/* Card */}
       <View style={styles.card}>
         <Text style={styles.title}>Login</Text>
         <Text style={styles.subtitle}>
@@ -83,7 +79,12 @@ const Login: React.FC = () => {
         </Text>
 
         <Input placeholder="User Name" value={email} onChangeText={setEmail} />
-        <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+        <Input
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
         {/* Remember & Forgot */}
         <View style={styles.row}>
@@ -139,14 +140,13 @@ const Login: React.FC = () => {
           </Text>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </CustomHead>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
     paddingHorizontal: 20,
     justifyContent: 'center',
   },
@@ -154,7 +154,8 @@ const styles = StyleSheet.create({
   /* ---------- Logo ---------- */
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginTop: height * 0.05,
+    marginLeft: 20,
   },
   logoText: {
     fontSize: 34,
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 27,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#111827',
     textAlign: 'center',
   },

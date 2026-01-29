@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import images from '../../assets/images';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import CustomHead from '../../components/CustomHead';
 
 type RootStackParamList = {
   AddYourPet: undefined;
@@ -13,7 +13,7 @@ type RootStackParamList = {
 const ChoosePet: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   return (
-    <SafeAreaView style={styles.container}>
+    <CustomHead>
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image source={images.logo} style={styles.logoImg} />
@@ -49,7 +49,7 @@ const ChoosePet: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </CustomHead>
   );
 };
 

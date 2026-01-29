@@ -7,7 +7,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomeScreen from '../screens/home/HomeScreen';
 import SplashScreen from '../screens/auth/SplashScreen';
 import Icons from '../assets/icons';
-import { Image, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet } from 'react-native';
 import Login from '../screens/auth/Login';
 import ChoosePet from '../screens/auth/ChoosePet';
 import QueAns from '../screens/home/QueAns';
@@ -16,10 +16,12 @@ import VeterinaryList from '../screens/home/services/VeterinaryList';
 import Signup from '../screens/auth/Signup';
 import PetHome from '../screens/home/PetHome';
 import CustomDrawerContent from './CustomDrawerContent';
+import DateSelectionScreen from '../screens/home/boarding/DateSelectionScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
+const { width } = Dimensions.get('window');
 
 // 1. Bottom Tab Navigator
 const BottomTabNavigator = () => (
@@ -84,7 +86,16 @@ const BottomTabNavigator = () => (
 const DrawerNavigator = () => (
   <Drawer.Navigator
     drawerContent={props => <CustomDrawerContent {...props} />}
-    screenOptions={{ headerShown: false, drawerType: 'front' }}
+    screenOptions={{
+      headerShown: false,
+      drawerType: 'front',
+      drawerStyle: {
+        width: width * 0.6,
+        backgroundColor: '#fff',
+        borderTopRightRadius: 20,
+        borderBottomRightRadius: 20,
+      },
+    }}
   >
     <Drawer.Screen
       name="MainTabs"
@@ -108,6 +119,7 @@ const AppNavigator = () => {
       <Stack.Screen name="AddYourPet" component={AddYourPet} />
       <Stack.Screen name="VeterinaryList" component={VeterinaryList} />
       <Stack.Screen name="PetHome" component={PetHome} />
+       <Stack.Screen name="DateSelection" component={DateSelectionScreen} />
     </Stack.Navigator>
   );
 };

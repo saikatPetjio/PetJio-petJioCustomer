@@ -118,6 +118,14 @@ const getPetCategories = async (): Promise<PetCategoryResponse> => {
   return response.data;
 };
 
+
+
+const getPetBreed = async (): Promise<PetCategoryResponse> => {
+  // We removed the headers/token logic here
+  const response = await apiClient.get<PetCategoryResponse>('api/breed');
+  return response.data;
+};
+
 //Pet size
 export interface PetSizeResponse {
   status: boolean;
@@ -145,4 +153,4 @@ const getPetGenders = async (): Promise<PetGenderResponse> => {
 };
 
 
-export default { register, login, addPet, getPetCategories, getPetSizes, getPetGenders };
+export default { register, login, addPet, getPetCategories, getPetSizes, getPetGenders, getPetBreed };

@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
   View,
   Image,
   Text,
   TouchableOpacity,
-  ScrollView,
   TextInput,
   Alert,
 } from 'react-native';
@@ -20,11 +18,13 @@ import { RootState } from '../../store';
 import { useAppDispatch } from '../../store/hook';
 import {
   addPetSlice,
+  fetchPetBreed,
   fetchPetCategories,
   fetchPetGenders,
   fetchPetSizes,
 } from '../../store/slices/authSlice';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import CustomHead from '../../components/CustomHead';
 
 type RootStackParamList = {
   Login: undefined;
@@ -34,13 +34,23 @@ type RootStackParamList = {
   PetHome: undefined;
 };
 
+interface Breed {
+  id: number;
+  name: string;
+  pet: {
+    id: number;
+    catName?: string;
+  };
+}
+
 const AddYourPet: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [selectPet, setSelectPet] = useState<string | null>(null);
+  const [selectPetName, setSelectPetName] = useState<string>('');
   const [petName, setPetName] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
   const [dailyFoodCount, setDailyFoodCount] = useState<string>('');
-  // const [selectBread, setSelectBread] = useState<string | null>(null);
+  const [selectBread, setSelectBread] = useState<string | null>(null);
   // const [selectCategory, setSelectCategory] = useState<string | null>(null);
   const [selectSize, setSelectSize] = useState<string | null>(null);
   // const [selectOtherName, setSelectOtherName] = useState<string | null>(null);
@@ -51,11 +61,12 @@ const AddYourPet: React.FC = () => {
   );
   const [showPicker, setShowPicker] = useState(false);
   const [dobLabel, setDobLabel] = useState('Select Date of Birth');
+  const [filteredBreeds, setFilteredBreeds] = useState<any[]>([]);
 
   const [userId, setUserId] = useState<string | null>(null);
   const dispatch = useAppDispatch();
 
-  const { user, categories, sizes, genders } = useSelector(
+  const { user, categories, sizes, genders, breeds } = useSelector(
     (state: RootState) => state.auth,
   );
 
@@ -63,17 +74,22 @@ const AddYourPet: React.FC = () => {
     dispatch(fetchPetCategories());
     dispatch(fetchPetSizes());
     dispatch(fetchPetGenders());
+    dispatch(fetchPetBreed());
   }, [dispatch]);
 
   useEffect(() => {
     console.log('Categories fetched:', categories);
     console.log('Sizes fetched:', sizes);
     console.log('Genders fetched:', genders);
-  }, [categories, sizes, genders]);
+    console.log('Breeds fetched:', breeds);
+    const filtered = breeds.filter(
+      item => item.pet.catName.toLowerCase() === selectPetName?.toLowerCase(),
+    );
+    setFilteredBreeds(filtered);
+  }, [categories, sizes, genders, breeds, selectPetName]);
 
   useEffect(() => {
     if (user) {
-      console.log('Logged-in user:', user);
       setUserId(user.id);
     }
   }, [user]);
@@ -134,48 +150,53 @@ const AddYourPet: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardAvoidingView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Image source={images.logo} style={styles.logoImg} />
-        </View>
+    <CustomHead>
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image source={images.logo} style={styles.logoImg} />
+      </View>
 
-        {/* Card */}
-        <View>
-          <Text style={styles.title}>Add a Pet</Text>
-          <Text style={styles.labelTxt}>Select Pet</Text>
-          <AppDropdown
-            data={categories.map(cat => ({
-              label: cat.catName,
-              value: cat.id,
-            }))}
-            value={selectPet}
-            onChange={item => {
-              console.log('Selected pet category:', item.value);
-              setSelectPet(item.value)}
-            }
-            search
-            placeholder="Select Pets"
-          />
+      {/* Card */}
+      <View>
+        <Text style={styles.title}>Add a Pet</Text>
+        <Text style={styles.labelTxt}>Select Pet</Text>
+        <AppDropdown
+          data={categories.map(cat => ({
+            label: cat.catName,
+            value: cat.id,
+          }))}
+          value={selectPet}
+          onChange={item => {
+            console.log('Selected pet category:', item.value);
+            setSelectPet(item.value);
+            setSelectPetName(item.label);
+          }}
+          search
+          placeholder="Select Pets"
+        />
 
-          <Text style={styles.labelTxt}>Pet Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Pet Name"
-            placeholderTextColor={'gray'}
-            value={petName}
-            onChangeText={setPetName}
-          />
+        <Text style={styles.labelTxt}>Pet Breed</Text>
+        <AppDropdown
+          data={filteredBreeds.map(breed => ({
+            label: breed.name,
+            value: breed.id,
+          }))}
+          value={selectBread}
+          onChange={item => setSelectBread(item.value)}
+          search
+          placeholder="Select Breeds"
+        />
 
-          {/* <Text style={styles.labelTxt}>Select Breed</Text>
+        <Text style={styles.labelTxt}>Pet Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Pet Name"
+          placeholderTextColor={'gray'}
+          value={petName}
+          onChangeText={setPetName}
+        />
+
+        {/* <Text style={styles.labelTxt}>Select Breed</Text>
           <AppDropdown
             data={petsData}
             value={selectBread}
@@ -184,7 +205,7 @@ const AddYourPet: React.FC = () => {
             placeholder="Select Breeds"
           /> */}
 
-          {/* <Text style={styles.labelTxt}>Select Category</Text>
+        {/* <Text style={styles.labelTxt}>Select Category</Text>
           <AppDropdown
             data={petsData}
             value={selectCategory}
@@ -193,23 +214,23 @@ const AddYourPet: React.FC = () => {
             placeholder="Select Categories"
           /> */}
 
-          {selectPet && parseInt(selectPet, 10) === 2 && (
-            <>
-              <Text style={styles.labelTxt}>Size</Text>
-              <AppDropdown
-                data={sizes.map(size => ({
-                  label: size.size,
-                  value: size.id,
-                }))}
-                value={selectSize}
-                onChange={item => setSelectSize(item.value)}
-                search
-                placeholder="Select Sizes"
-              />
-            </>
-          )}
+        {selectPet && parseInt(selectPet, 10) === 2 && (
+          <>
+            <Text style={styles.labelTxt}>Size</Text>
+            <AppDropdown
+              data={sizes.map(size => ({
+                label: size.size,
+                value: size.id,
+              }))}
+              value={selectSize}
+              onChange={item => setSelectSize(item.value)}
+              search
+              placeholder="Select Sizes"
+            />
+          </>
+        )}
 
-          {/* <Text style={styles.labelTxt}>Other Name</Text>
+        {/* <Text style={styles.labelTxt}>Other Name</Text>
           <AppDropdown
             data={petsData}
             value={selectOtherName}
@@ -218,64 +239,63 @@ const AddYourPet: React.FC = () => {
             placeholder="Select Other Names"
           /> */}
 
-          <Text style={styles.labelTxt}>Gender</Text>
-          <AppDropdown
-            data={genders.map(gender => ({
-              label: gender.name,
-              value: gender.id,
-            }))}
-            value={selectGender}
-            onChange={item => setSelectGender(item.value)}
-            placeholder="Select Genders"
-          />
-          <Text style={styles.labelTxt}>Dob</Text>
-          <TouchableOpacity onPress={() => setShowPicker(true)}>
-            <TextInput
-              style={styles.input}
-              placeholder="Select Dob"
-              placeholderTextColor={'gray'}
-              value={selectDob || ''}
-              onChangeText={setSelectDob}
-              editable={false}
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.labelTxt}>Weight</Text>
+        <Text style={styles.labelTxt}>Gender</Text>
+        <AppDropdown
+          data={genders.map(gender => ({
+            label: gender.name,
+            value: gender.id,
+          }))}
+          value={selectGender}
+          onChange={item => setSelectGender(item.value)}
+          placeholder="Select Genders"
+        />
+        <Text style={styles.labelTxt}>Dob</Text>
+        <TouchableOpacity onPress={() => setShowPicker(true)}>
           <TextInput
             style={styles.input}
-            placeholder="Enter Pet Weight"
+            placeholder="Select Dob"
             placeholderTextColor={'gray'}
-            value={weight}
-            onChangeText={setWeight}
+            value={selectDob || ''}
+            onChangeText={setSelectDob}
+            editable={false}
           />
+        </TouchableOpacity>
 
-          <Text style={styles.labelTxt}>Daily Food Count</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Daily Food Count"
-            placeholderTextColor={'gray'}
-            value={dailyFoodCount}
-            onChangeText={setDailyFoodCount}
-          />
+        <Text style={styles.labelTxt}>Weight</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Pet Weight"
+          placeholderTextColor={'gray'}
+          value={weight}
+          onChangeText={setWeight}
+        />
 
-          <TouchableOpacity onPress={handleAddPet} activeOpacity={0.8}>
-            <LinearGradient colors={['#EC4899', '#D946EF']} style={styles.btn}>
-              <Text style={styles.btnTxt}>Sumbmit</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.labelTxt}>Daily Food Count</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Daily Food Count"
+          placeholderTextColor={'gray'}
+          value={dailyFoodCount}
+          onChangeText={setDailyFoodCount}
+        />
 
-        {showPicker && (
-          <DateTimePicker
-            value={selectDob ? new Date(selectDob) : new Date()}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            maximumDate={new Date()} // Prevents selecting future dates
-            onChange={onChange}
-          />
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <TouchableOpacity onPress={handleAddPet} activeOpacity={0.8}>
+          <LinearGradient colors={['#EC4899', '#D946EF']} style={styles.btn}>
+            <Text style={styles.btnTxt}>Sumbmit</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {showPicker && (
+        <DateTimePicker
+          value={selectDob ? new Date(selectDob) : new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          maximumDate={new Date()} // Prevents selecting future dates
+          onChange={onChange}
+        />
+      )}
+    </CustomHead>
   );
 };
 

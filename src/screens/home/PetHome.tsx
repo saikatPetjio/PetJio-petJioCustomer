@@ -18,7 +18,7 @@ import { RootState } from '../../store';
 
 const PetHome = () => {
   const [menuVisible, setMenuVisible] = useState(false);
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (user) {
@@ -88,9 +88,10 @@ const PetHome = () => {
         </View>
         <View style={styles.servicesGrid}>
           <ServiceItem
-            title="Training"
+            title="Boarding"
             icon={Images.training}
             color="#E1BEE7"
+            onPress={() => navigation.navigate('DateSelection')}
           />
           <ServiceItem
             title="Grooming"
@@ -165,14 +166,14 @@ const VetCard = ({ name, sub, price, dist }: any) => (
   </View>
 );
 
-const ServiceItem = ({ title, icon, color }: any) => (
-  <View style={styles.serviceItem}>
+const ServiceItem = ({ title, icon, color, onPress }: any) => (
+  <TouchableOpacity style={styles.serviceItem} onPress={onPress}>
     <View style={[styles.serviceIconCircle, { backgroundColor: color }]}>
       <Image source={icon} style={styles.serviceIcon} />
     </View>
     <Text style={styles.serviceTitle}>{title}</Text>
     <Text style={styles.serviceDesc}>Every dog learns at its own pace.</Text>
-  </View>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
